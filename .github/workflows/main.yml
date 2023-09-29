@@ -1,0 +1,44 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: docker/setup-docker@v2
+        with:
+          docker-version: '20.10.7'
+
+      - name: Build and push Docker images
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          # Build and push your Docker images for React, Python, and MongoDB
+          docker build -t frontened ./frontend/Dockerfile
+          docker build -t your-python-app-image ./path-to-python-app
+          docker build -t your-mongodb-image ./path-to-mongodb
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker push your-react-app-image
+          docker push your-python-app-image
+          docker push your-mongodb-image
+
+      - name: SSH into EC2 and deploy
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          EC2_INSTANCE_IP: your-ec2-instance-ip
+        run: |
+          # SSH into your EC2 instance and deploy your application using Docker Compose or other methods
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh -i ~/.ssh/id_rsa ec2-user@$EC2_INSTANCE_IP "cd /path-to-your-app && docker-compose up -d"

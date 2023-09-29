@@ -1,0 +1,35 @@
+sudo docker network create --driver bridge --subnet=172.19.0.0/16 myapp
+	
+	
+sudo docker run -d  -p 3000:3000 --network myapp --ip 172.19.0.3 --name=react-container frontened
+
+sudo docker run -d  --name=flask-container  -p 5000:5000 --network myapp --ip 172.19.0.4 backened
+
+
+sudo docker run -d --name mongodb-container   -e MONGO_INITDB_ROOT_USERNAME=admin   -e MONGO_INITDB_ROOT_PASSWORD=admin   -p 27017:27017 --network myapp --ip 172.19.0.5   mongo:latest
+
+
+
+
+
+kubectl apply -f react-deployment.yaml
+kubectl apply -f flask-deployment.yaml
+kubectl apply -f mongodb-deployment.yaml
+
+
+
+kubectl apply -f react-service.yaml
+kubectl apply -f flask-service.yaml
+kubectl apply -f mongodb-service.yaml
+
+
+kubectl create secret generic mongodb-credentials \
+  --from-literal=username=admin \
+  --from-literal=password=admin
+
+
+
+kubectl port-forward service/flask-service 5000:5000
+kubectl port-forward service/react-service 3000:3000
+$ kubectl exec -it pod/mongodb-deployment-db8b88c5f-987zd bash
+
